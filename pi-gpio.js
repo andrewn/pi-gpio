@@ -6,6 +6,8 @@ var fs = require("fs"),
 var gpioAdmin = "gpio-admin",
 	sysFsPath = "/sys/devices/virtual/gpio";
 
+var piRevision = require("pi-revision");
+
 var pinMapping = {
 	"3": 0,
 	"5": 1,
@@ -44,7 +46,32 @@ function handleExecResponse(method, pinNumber, callback) {
 	}
 }
 
+var pinMappingCorrectedForRevision = false;
+
+function diffMapForRevision() {
+  var revision = piRevision.revisionNum();
+  if (revision == 1) {
+    return {};
+  } else if (revision == 2) {
+    return { "3" : 2 }
+  }
+}
+
+function updatePinMappingForRevision() {
+	var diffMap = diffMapForRevision();
+	Object.keys(diffMap)
+			  .forEach(function (key) {
+			  	pinMapping[key] = diffMap[key];
+			  });
+	pinMappingCorrectedForRevision = true;
+}
+
 function sanitizePinNumber(pinNumber) {
+
+	if (!pinMappingCorrectedForRevision) {
+		updatePinMappingForRevision();
+	}
+
 	if(!isNumber(pinNumber) || !isNumber(pinMapping[pinNumber])) {
 		throw new Error("Pin number isn't valid");
 	}
