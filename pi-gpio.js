@@ -6,7 +6,7 @@ var fs = require("fs"),
 var gpioAdmin = "gpio-admin",
 	sysFsPath = "/sys/devices/virtual/gpio";
 
-var piRevision = require("pi-revision");
+var piRevision = require("./pi-revision");
 
 var pinMapping = {
 	"3": 0,
