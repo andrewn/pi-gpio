@@ -28,6 +28,12 @@ var pinMapping = {
 	"26": 7
 };
 
+var pinMapping2V512 = {
+ "3"  : 2,
+ "5"  : 3,
+ "13" : 27
+};
+
 function isNumber(number) {
 	return !isNaN(parseInt(number, 10));
 }
@@ -46,31 +52,17 @@ function handleExecResponse(method, pinNumber, callback) {
 	}
 }
 
-var pinMappingCorrectedForRevision = false;
-
-function diffMapForRevision() {
+function updatePinMappingForRevision() {
   var revision = piRevision.revisionNum();
-  if (revision == 1) {
-    return {};
-  } else if (revision == 2) {
-    return { "3" : 2 }
+  if (revision == 2) {
+  	Object.keys(pinMapping2V512)
+  			  .forEach(function (key) {
+  			  	pinMapping[key] = pinMapping2V512[key];
+  			  });
   }
 }
 
-function updatePinMappingForRevision() {
-	var diffMap = diffMapForRevision();
-	Object.keys(diffMap)
-			  .forEach(function (key) {
-			  	pinMapping[key] = diffMap[key];
-			  });
-	pinMappingCorrectedForRevision = true;
-}
-
 function sanitizePinNumber(pinNumber) {
-
-	if (!pinMappingCorrectedForRevision) {
-		updatePinMappingForRevision();
-	}
 
 	if(!isNumber(pinNumber) || !isNumber(pinMapping[pinNumber])) {
 		throw new Error("Pin number isn't valid");
@@ -148,6 +140,8 @@ var gpio = {
 		fs.writeFile(sysFsPath + "/gpio" + pinMapping[pinNumber] + "/value", value, "utf8", callback);
 	}
 };
+
+updatePinMappingForRevision();
 
 gpio.export = gpio.open;
 gpio.unexport = gpio.close;
